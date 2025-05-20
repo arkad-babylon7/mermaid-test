@@ -1,114 +1,115 @@
-```mermaid
 graph TD
-    %% 主要ユーザーグループと入口点
-    User([ユーザー]) --> UserLB[ユーザー用 LB]
-    Admin([運用者/管理者]) --> AdminLB[運用者用 LB]
-    
-    %% ユーザー向けスタック
-    subgraph UserStack[ユーザー向けシステムスタック]
-        direction TB
-        UserLB --> NextUser[Next.js UI<br>Cloud Run]
-        NextUser --> UserCR[ユーザー FastAPI<br>Cloud Run]
-        
-        %% ユーザー向けコアシステム
-        UserCR --> UserCore[ユーザーコアシステム]
-        
-        subgraph UserCore[ユーザーコアシステム]
-            direction TB
-            LG[LangGraph<br>ワークフロー]
-            UserAuth[認証・認可]
-            UserDB[データ管理]
-            UserMon[監視・ロギング]
-            UserCF[Cloud Functions]
-        end
-        
-        %% AIエンジン接続
-        LG --> RAG
+
+    %% Web アプリケーション層
+    subgraph WebApps[Web アプリケーション]
+        USER_WEB[aiila-user-web<br>Next.js (UI)] --> USER_API
+        ADMIN_WEB[aiila-admin-web<br>Next.js or FastAPI (UI)] --> ADMIN_API
     end
-    
-    %% 運用者向けスタック
-    subgraph AdminStack[運用者向けシステムスタック]
-        direction TB
-        AdminLB --> NextAdmin[Next.js コンソール<br>Cloud Run]
-        NextAdmin --> AdminCR[運用者 FastAPI<br>Cloud Run]
-        
-        %% 運用者向けコアシステム
-        AdminCR --> AdminCore[運用者コアシステム]
-        
-        subgraph AdminCore[運用者コアシステム]
-            direction TB
-            AdminAuth[認証・認可]
-            AdminDB[データ管理]
-            AdminMon[監視・ロギング]
-            AdminCF[Cloud Functions]
-        end
+
+    %% API 層
+    subgraph APIs[API サーバー]
+        USER_API[aiila-user-api<br>FastAPI] --> DOMAIN
+        ADMIN_API[aiila-admin-api<br>FastAPI] --> DOMAIN
     end
-    
-    %% 共有コンポーネント
-    subgraph SharedComponents[共有コンポーネント]
-        %% AIエンジン
-        subgraph AIEngine[AIエンジン]
-            RAG[RAGパイプライン] --> LLM[LLM: GPT/Claude]
-        end
-        
-        %% Embedding更新
-        subgraph EmbeddingSystem[Embedding更新]
-            CRJ[Cloud Run Jobs] --> EB[Embedding処理]
-        end
-        
-        %% データストア
-        subgraph DataStores[データストア]
-            SQL[(Cloud SQL)]
-            FS[(Firestore)]
-            VS[(Pinecone)]
-            BQ[(BigQuery)]
-            CS[(Cloud Storage)]
-        end
-        
-        %% 外部連携
-        subgraph ExternalServices[外部連携]
-            PS[Cloud Pub/Sub]
-            SG[SendGrid]
-        end
-        
-        %% 認証・監視
-        subgraph AuthMonitoring[認証・監視]
-            UserIP[Identity<br>ユーザー用]
-            AdminIP[Identity<br>運用者用]
-            Monitoring[監視システム]
-        end
+
+    %% バックグラウンド・非同期処理
+    subgraph Functions[Functions / 非同期処理]
+        FUNCTIONS[aiila-functions] --> DOMAIN
     end
-    
+
+    %% AI 関連処理
+    subgraph AI[AI 処理系]
+        EMBEDDING[aiila-embedding] --> DOMAIN
+        AI_MODEL[aiila-ai-model] --> DOMAIN
+    end
+
+    %% ドメインモデル
+    subgraph DOMAIN["aiila-domain-model<br>ドメイン層（Python パッケージ）"]
+        DM_Assistant[Assistant]
+        DM_Document[Document]
+        DM_User[User / Operator]
+        DM_Role[Role / Permission]
+
+        DM_Assistant --> ORM
+        DM_Document --> ORM
+        DM_User --> ORM
+        DM_Role --> ORM
+    end
+
+    %% ORM
+    subgraph ORM["SQLAlchemy ORM"]
+        Session[Session]
+        Base[Declarative Base]
+        RelQuery[Relationship / Query]
+    end
+
+    ORM --> DB
+
+    %% データベース
+    subgraph DB["Cloud SQL (PostgreSQL)"]
+        DB_Assistants[assistants]
+        DB_Documents[documents]
+        DB_Users[users / operators]
+        DB_Roles[roles / permissions]
+    end
+
     %% CI/CD
-    subgraph CICD[CI/CD]
-        GH[GitHub] --> CBA[Cloud Build]
-        CBA --> AR[Artifact Registry]
-        AR --> Deploy[デプロイ]
+    subgraph CICD["CI/CD パイプライン（GitHub Actions / Cloud Build）"]
+        GitHub[GitHub Repo] --> BuildDeploy[Build / Test / Deploy]
+        BuildDeploy --> |Deploy| USER_WEB
+        BuildDeploy --> |Deploy| ADMIN_WEB
+        BuildDeploy --> |Deploy| USER_API
+        BuildDeploy --> |Deploy| ADMIN_API
+        BuildDeploy --> |Deploy| FUNCTIONS
+        BuildDeploy --> |Deploy| EMBEDDING
+        BuildDeploy --> |Deploy| AI_MODEL
     end
-    
-    %% 主要接続（シンプル化）
-    UserAuth --> UserIP
-    AdminAuth --> AdminIP
-    UserDB -.-> DataStores
-    AdminDB -.-> DataStores
-    UserCF --> PS
-    AdminCF --> SG
-    LG -.-> VS
-    EB -.-> DataStores
-    RAG -.-> VS
-    
-    %% スタイル
-    classDef userSide fill:#f9f9f9,stroke:#666666
-    classDef adminSide fill:#eeeeee,stroke:#666666
-    classDef shared fill:#f5f5f5,stroke:#888888
-    classDef ci fill:#e0e0e0,stroke:#777777
-    classDef database fill:#ffffff,stroke:#999999,stroke-dasharray: 5 5
-    classDef endpoint fill:#ffffff,stroke:#444444,stroke-width:2px
-    
-    class UserStack,NextUser,UserCR,UserCore,LG,UserAuth,UserDB,UserMon,UserCF userSide
-    class AdminStack,NextAdmin,AdminCR,AdminCore,AdminAuth,AdminDB,AdminMon,AdminCF adminSide
-    class SharedComponents,AIEngine,EmbeddingSystem,ExternalServices,AuthMonitoring shared
-    class CICD,GH,CBA,AR,Deploy ci
-    class SQL,FS,VS,BQ,CS database
-    class UserLB,AdminLB endpoint
-```
+
+    %% ログ・監視
+    subgraph MONITOR["ログ・監視 (Cloud Logging / Error Reporting / Monitoring)"]
+        USER_API --> Logs[ログ出力]
+        ADMIN_API --> Logs
+        FUNCTIONS --> Logs
+        EMBEDDING --> Logs
+        AI_MODEL --> Logs
+
+        Logs --> Monitoring[Cloud Monitoring]
+        Logs --> ErrorReport[Error Reporting]
+    end
+
+    %% ドメインモデルと ORM 関係
+    DOMAIN --> ORM
+
+    %% ORM と DB マッピング
+    Session --> DB_Assistants
+    Session --> DB_Documents
+    Session --> DB_Users
+    Session --> DB_Roles
+
+    %% スタイル定義
+    classDef core fill:#ffe0b2,stroke:#d35400,stroke-width:2px
+    class DOMAIN,DM_Assistant,DM_Document,DM_User,DM_Role core
+
+    classDef orm fill:#f0f0f0,stroke:#888888,stroke-dasharray: 5 5
+    class ORM,Session,Base,RelQuery orm
+
+    classDef db fill:#e0f7fa,stroke:#00796b
+    class DB,DB_Assistants,DB_Documents,DB_Users,DB_Roles db
+
+    classDef api fill:#fce4ec,stroke:#ad1457
+    class USER_API,ADMIN_API api
+
+    classDef web fill:#e8f5e9,stroke:#2e7d32
+    class USER_WEB,ADMIN_WEB web
+
+    classDef ai fill:#ede7f6,stroke:#512da8
+    class EMBEDDING,AI_MODEL ai
+
+    classDef fn fill:#f3e5f5,stroke:#6a1b9a
+    class FUNCTIONS fn
+
+    classDef cicd fill:#e3f2fd,stroke:#1565c0
+    class CICD,GitHub,BuildDeploy cicd
+
+    classDef monitor fill:#fbe9e7,stroke:#bf360c
+    class MONITOR,Logs,Monitoring,ErrorReport monitor
