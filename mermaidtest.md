@@ -55,7 +55,7 @@ graph TD
     end
 
     %% CI/CD
-    subgraph CICD["CI/CD パイプライン<br/>(GitHub Actions / Cloud Build)"]
+    subgraph CICD["CI/CD パイプライン(GitHub Actions / Cloud Build)"]
         GitHub[GitHub Repo] --> BuildDeploy["Build / Test / Deploy"]
         BuildDeploy -->|Deploy| USER_WEB
         BuildDeploy -->|Deploy| ADMIN_WEB
