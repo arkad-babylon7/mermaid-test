@@ -2,30 +2,30 @@
 graph TD
 
     %% Web アプリケーション層
-    subgraph WebApps[Web アプリケーション]
-        USER_WEB["aiila-user-web\nNext.js (UI)"] --> USER_API
-        ADMIN_WEB["aiila-admin-web\nNext.js or FastAPI (UI)"] --> ADMIN_API
+    subgraph WebApps["Web アプリケーション"]
+        USER_WEB["aiila-user-web<br/>Next.js (UI)"] --> USER_API
+        ADMIN_WEB["aiila-admin-web<br/>Next.js or FastAPI (UI)"] --> ADMIN_API
     end
 
     %% API 層
-    subgraph APIs[API サーバー]
-        USER_API["aiila-user-api\nFastAPI"] --> DOMAIN
-        ADMIN_API["aiila-admin-api\nFastAPI"] --> DOMAIN
+    subgraph APIs["API サーバー"]
+        USER_API["aiila-user-api<br/>FastAPI"] --> DOMAIN
+        ADMIN_API["aiila-admin-api<br/>FastAPI"] --> DOMAIN
     end
 
     %% バックグラウンド・非同期処理
-    subgraph Functions[Functions / 非同期処理]
+    subgraph Functions["Functions / 非同期処理"]
         FUNCTIONS["aiila-functions"] --> DOMAIN
     end
 
     %% AI 関連処理
-    subgraph AI[AI 処理系]
+    subgraph AI["AI 処理系"]
         EMBEDDING["aiila-embedding"] --> DOMAIN
         AI_MODEL["aiila-ai-model"] --> DOMAIN
     end
 
     %% ドメインモデル
-    subgraph DOMAIN["aiila-domain-modelドメイン層（Python パッケージ）"]
+    subgraph DOMAIN["aiila-domain-model<br/>ドメイン層（Python パッケージ）"]
         DM_Assistant[Assistant]
         DM_Document[Document]
         DM_User["User / Operator"]
@@ -55,7 +55,7 @@ graph TD
     end
 
     %% CI/CD
-    subgraph CICD["CI/CD パイプライン(GitHub Actions / Cloud Build)"]
+    subgraph CICD["CI/CD パイプライン<br/>(GitHub Actions / Cloud Build)"]
         GitHub[GitHub Repo] --> BuildDeploy["Build / Test / Deploy"]
         BuildDeploy -->|Deploy| USER_WEB
         BuildDeploy -->|Deploy| ADMIN_WEB
@@ -67,7 +67,7 @@ graph TD
     end
 
     %% ログ・監視
-    subgraph MONITOR["ログ・監視\n(Cloud Logging / Error Reporting / Monitoring)"]
+    subgraph MONITOR["ログ・監視<br/>(Cloud Logging / Error Reporting / Monitoring)"]
         USER_API --> Logs[ログ出力]
         ADMIN_API --> Logs
         FUNCTIONS --> Logs
