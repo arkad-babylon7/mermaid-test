@@ -26,6 +26,7 @@ graph LR
 
     %% ドメインモデル
     subgraph DOMAIN["aiila-domain-model<br/>ドメイン層（Python パッケージ）"]
+        style DOMAIN width:250px;
         DM_Assistant[Assistant]
         DM_Document[Document]
         DM_User["User / Operator"]
