@@ -1,5 +1,5 @@
 ```mermaid
-graph TD
+graph LR
 
     %% Web アプリケーション層
     subgraph WebApps["Web アプリケーション"]
