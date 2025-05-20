@@ -25,7 +25,7 @@ graph LR
     end
 
     %% ドメインモデル
-    subgraph DOMAIN["aiila-domain-model<br/>ドメイン層（Python パッケージ）"]
+    subgraph DOMAIN["aiila-domain-model"]
         DM_Assistant[Assistant]
         DM_Document[Document]
         DM_User["User / Operator"]
