@@ -26,7 +26,6 @@ graph LR
 
     %% ドメインモデル
     subgraph DOMAIN["aiila-domain-model<br/>ドメイン層（Python パッケージ）"]
-        style DOMAIN padding:20px;
         DM_Assistant[Assistant]
         DM_Document[Document]
         DM_User["User / Operator"]
@@ -56,7 +55,7 @@ graph LR
     end
 
     %% CI/CD
-    subgraph CICD["CI/CD <br/>パイプライン(GitHub Actions / Cloud Build)"]
+    subgraph CICD["CI/CD パイプライン<br/>(GitHub Actions / Cloud Build)"]
         GitHub[GitHub Repo] --> BuildDeploy["Build / Test / Deploy"]
         BuildDeploy -->|Deploy| USER_WEB
         BuildDeploy -->|Deploy| ADMIN_WEB
